@@ -4,15 +4,15 @@ import AdContextProvider from '@/components/ad-context-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+export default function AdFree() {
   return (
     <main className={inter.className}>
       <AdContextProvider>
-        <h1 className="text-center text-2xl font-semibold">Home</h1>
+        <h1 className="text-center text-2xl font-semibold">Just Kidding!</h1>
         <div className="flex flex-row justify-center mt-4">
-          <AdSlot id="banner-ad" path="/Travel/Europe/France/Paris" size="banner" />
+          <AdSlot id="leaderboard" path="/Travel" size="leaderboard" targeting={{ test: 'event' }} />
         </div>
-        <p className="mt-4">Homepage content</p>
+        <p className="mt-4">Lorem ipsum dolor sit amet...</p>
       </AdContextProvider>
     </main>
   )

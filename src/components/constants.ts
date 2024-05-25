@@ -1,0 +1,1 @@
+export const AD_MANAGER_ACCOUNT_ID = process.env.NEXT_PUBLIC_AD_MANAGER_ACCOUNT_ID
