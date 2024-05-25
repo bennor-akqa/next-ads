@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import createGenericContext from './context'
 import { AD_MANAGER_ACCOUNT_ID } from './constants'
+import { useRouter } from 'next/router'
 
 interface AdContext {
   disableAds: boolean
@@ -19,6 +20,8 @@ interface AdContextProviderProps {
 function AdContextProvider({ disableAds = false, targeting = {}, children }: AdContextProviderProps) {
   const targetingRef = useRef(targeting)
   const [initialized, setInitialized] = useState(false)
+
+  useRouter()
 
   useEffect(() => {
     if (!AD_MANAGER_ACCOUNT_ID) {

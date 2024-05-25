@@ -1,7 +1,5 @@
-import AdScript from '@/components/ad-script'
 import { AD_MANAGER_ACCOUNT_ID } from '@/components/constants'
 import { Html, Head, Main, NextScript } from 'next/document'
-import Script from 'next/script'
 
 export default function Document() {
   return (

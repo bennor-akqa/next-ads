@@ -28,7 +28,11 @@ function AdSlot({ id, path, size, targeting }: AdSlotProps) {
   const slotRef = useRef<googletag.Slot | null>()
   const targetingRef = useRef(targeting)
 
+  const { disableAds, initialized } = useAdContext()
+
   useEffect(() => {
+    if (!initialized) return
+
     console.debug(`AdSlot: creating slot \`${id}\``)
     googletag.cmd.push(() => {
       // Define an ad slot for div with id "banner-ad".
@@ -56,16 +60,13 @@ function AdSlot({ id, path, size, targeting }: AdSlotProps) {
     return () => {
       slotRef.current && googletag.cmd.push(destroySlot)
     }
-  }, [id, path, size])
+  }, [id, path, size, initialized])
 
-  return <div id={id} style={AD_SLOT_STYLES[size]}></div>
+  return !disableAds ? <div id={id} style={AD_SLOT_STYLES[size]}></div> : <></>
 }
 
 function AdSlotWrapper(props: AdSlotProps) {
-  const { disableAds, initialized } = useAdContext()
-  console.debug('AdSlot: ads', disableAds ? 'disabled' : 'enabled', initialized ? 'initialized' : 'not initialized')
-  const renderAds = !disableAds && initialized && !!AD_MANAGER_ACCOUNT_ID
-  return renderAds ? <AdSlot {...props} /> : <></>
+  return AD_MANAGER_ACCOUNT_ID ? <AdSlot {...props} /> : <></>
 }
 
 export default AdSlotWrapper
