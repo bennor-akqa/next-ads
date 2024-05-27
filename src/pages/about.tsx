@@ -12,7 +12,7 @@ export default function About() {
         <div className="flex flex-row justify-center mt-4">
           <AdSlot id="banner-ad" path="/Travel/Europe/France/Paris" size="banner" />
         </div>
-        <p className="mt-4">Lorem ipsum dolor sit amet...</p>
+        <p className="mt-8 text-center">Lorem ipsum dolor sit amet...</p>
       </AdContextProvider>
     </main>
   )
