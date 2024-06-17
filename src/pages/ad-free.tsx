@@ -1,6 +1,7 @@
 import { Inter } from 'next/font/google'
 import AdSlot from '@/components/ad-slot'
 import AdContextProvider from '@/components/ad-context-provider'
+import RequestAds from '@/components/request-ads'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -10,9 +11,10 @@ export default function AdFree() {
       <AdContextProvider>
         <h1 className="text-center text-2xl font-semibold">Just Kidding!</h1>
         <div className="flex flex-row justify-center mt-4">
-          <AdSlot id="leaderboard" path="/Travel" size="leaderboard" targeting={{ test: 'event' }} />
+          <AdSlot id="ad-free-1" path="/6355419/Travel" size="leaderboard" targeting={{ test: 'event' }} />
         </div>
         <p className="mt-8 text-center">Lorem ipsum dolor sit amet...</p>
+        <RequestAds />
       </AdContextProvider>
     </main>
   )

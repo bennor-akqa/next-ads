@@ -1,6 +1,6 @@
 import { CSSProperties, useEffect, useRef } from 'react'
 import { useAdContext } from './ad-context-provider'
-import { AD_MANAGER_ACCOUNT_ID } from './constants'
+import { ADS_ENABLED } from './constants'
 
 const AD_SLOT_SIZES = {
   fluid: 'fluid',
@@ -24,49 +24,65 @@ export interface AdSlotProps {
   targeting?: Record<string, string>
 }
 
-function AdSlot({ id, path, size, targeting }: AdSlotProps) {
-  const slotRef = useRef<googletag.Slot | null>()
-  const targetingRef = useRef(targeting)
+const adSlots = new Map<string, googletag.Slot>()
 
-  const { disableAds, initialized } = useAdContext()
+export function getAdSlotsInternal() {
+  return Array.from(adSlots.values())
+}
+
+interface UseAdSlotOptions extends AdSlotProps {
+  isActive: boolean
+}
+
+function useAdSlot({ id, path, size, targeting, isActive }: UseAdSlotOptions) {
+  const targetingRef = useRef(targeting)
+  targetingRef.current = targeting
 
   useEffect(() => {
-    if (!initialized) return
+    if (!isActive) return
 
-    console.debug(`AdSlot: creating slot \`${id}\``)
+    console.debug('AdSlot: mount', id)
+
+    let slot: googletag.Slot | undefined
     googletag.cmd.push(() => {
-      // Define an ad slot for div with id "banner-ad".
-      slotRef.current = googletag
-        .defineSlot(`/${AD_MANAGER_ACCOUNT_ID}/${path.replace(/^\//, '')}`, AD_SLOT_SIZES[size], id)
-        ?.addService(googletag.pubads())
+      // Define an ad slot for div with id
+      console.debug('AdSlot: defining slot', id, path, size)
+      slot = googletag.defineSlot(path, AD_SLOT_SIZES[size], id)?.addService(googletag.pubads())
+      if (!slot) return
 
       if (targetingRef.current) {
         for (const [key, value] of Object.entries(targetingRef.current)) {
-          slotRef.current?.setTargeting(key, value)
+          slot.setTargeting(key, value)
         }
       }
 
-      googletag.cmd.push(() => {
-        console.debug(`AdSlot: displaying slot \`${id}\``)
-        slotRef.current && googletag.display(slotRef.current)
-      })
+      console.debug(`AdSlot: displaying slot`, id)
+      googletag.display(slot)
+
+      adSlots.set(id, slot)
     })
 
     function destroySlot() {
-      console.debug(`AdSlot: destroying slot \`${id}\``)
-      slotRef.current && googletag.destroySlots([slotRef.current])
+      console.debug(`AdSlot: destroying slot`, id)
+      adSlots.delete(id)
+      slot && googletag.destroySlots([slot])
     }
 
     return () => {
-      slotRef.current && googletag.cmd.push(destroySlot)
+      console.debug('AdSlot: unmount', id)
+      googletag.cmd.push(destroySlot)
     }
-  }, [id, path, size, initialized])
-
-  return !disableAds ? <div id={id} style={AD_SLOT_STYLES[size]}></div> : <></>
+  }, [id, isActive, path, size])
 }
 
-function AdSlotWrapper(props: AdSlotProps) {
-  return AD_MANAGER_ACCOUNT_ID ? <AdSlot {...props} /> : <></>
+function AdSlot(props: AdSlotProps) {
+  const id = `ad-slot-${props.id}`
+  const { disableAds, initialized } = useAdContext()
+  const isActive = initialized && !disableAds
+  const renderContainer = !disableAds
+  useAdSlot({ ...props, id, isActive })
+
+  return renderContainer ? <div id={id} style={AD_SLOT_STYLES[props.size]}></div> : <></>
 }
 
-export default AdSlotWrapper
+export default ADS_ENABLED ? AdSlot : () => <></>

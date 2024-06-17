@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import createGenericContext from './context'
-import { AD_MANAGER_ACCOUNT_ID } from './constants'
-import { useRouter } from 'next/router'
+import { ADS_ENABLED } from './constants'
 
 interface AdContext {
   disableAds: boolean
@@ -21,12 +20,7 @@ function AdContextProvider({ disableAds = false, targeting = {}, children }: AdC
   const targetingRef = useRef(targeting)
   const [initialized, setInitialized] = useState(false)
 
-  useRouter()
-
   useEffect(() => {
-    if (!AD_MANAGER_ACCOUNT_ID) {
-      return
-    }
     console.debug(`AdContextProvider: configuring`)
     googletag.cmd.push(() => {
       if (targetingRef.current) {
@@ -34,18 +28,18 @@ function AdContextProvider({ disableAds = false, targeting = {}, children }: AdC
           googletag.pubads().setTargeting(key, value)
         }
       }
-      googletag.enableServices()
     })
 
     function cleanup() {
-      console.debug(`AdContextProvider: cleaning up`)
+      console.debug('AdContextProvider: clearing targeting')
       googletag.pubads().clearTargeting()
-      setInitialized(false)
     }
 
     setInitialized(true)
 
     return () => {
+      console.debug(`AdContextProvider: cleaning up`)
+      setInitialized(false)
       googletag.cmd.push(cleanup)
     }
   }, [])
@@ -53,4 +47,4 @@ function AdContextProvider({ disableAds = false, targeting = {}, children }: AdC
   return <context.AdContextProvider value={{ disableAds, initialized }}>{children}</context.AdContextProvider>
 }
 
-export default AdContextProvider
+export default ADS_ENABLED ? AdContextProvider : () => <></>
