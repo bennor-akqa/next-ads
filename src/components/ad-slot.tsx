@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { useAdContext } from './ad-context-provider'
 import { ADS_ENABLED } from './constants'
 import { getAdSlotSize, AdSlotSize, getAdSlotStyle } from './ad-slot-sizes'
-import { deleteAdSlot, setAdSlot } from './ad-slots-cache'
 
 export interface AdSlotProps {
   id: string
@@ -16,6 +15,7 @@ interface UseAdSlotOptions extends AdSlotProps {
 }
 
 function useAdSlot({ id, path, size, targeting, isActive }: UseAdSlotOptions) {
+  const { onAdSlotUpdate } = useAdContext()
   const targetingRef = useRef(targeting)
   targetingRef.current = targeting
 
@@ -47,20 +47,20 @@ function useAdSlot({ id, path, size, targeting, isActive }: UseAdSlotOptions) {
       console.debug(`AdSlot: displaying slot`, id)
       googletag.display(slot)
 
-      setAdSlot(id, slot)
+      onAdSlotUpdate({ type: 'add', id, slot })
     })
 
     function destroySlot() {
       console.debug(`AdSlot: destroying slot`, id)
-      deleteAdSlot(id)
       slot && googletag.destroySlots([slot])
     }
 
     return () => {
       console.debug('AdSlot: unmount', id)
+      onAdSlotUpdate({ type: 'remove', id })
       googletag.cmd.push(destroySlot)
     }
-  }, [id, isActive, path, size])
+  }, [id, isActive, onAdSlotUpdate, path, size])
 }
 
 function AdSlot(props: AdSlotProps) {

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useAdContext } from './ad-context-provider'
 import { ADS_ENABLED } from './constants'
-import { deleteAdSlot, setAdSlot } from './ad-slots-cache'
 
 const INTERSTITIAL_ID = 'interstitial'
 
@@ -16,6 +15,7 @@ interface UseInterstitialAdSlotOptions extends InterstitialAdSlotProps {
 }
 
 function useInterstitialAdSlot({ path, triggers, targeting, isActive }: UseInterstitialAdSlotOptions) {
+  const { onAdSlotUpdate } = useAdContext()
   const targetingRef = useRef(targeting)
   targetingRef.current = targeting
 
@@ -53,20 +53,20 @@ function useInterstitialAdSlot({ path, triggers, targeting, isActive }: UseInter
         }
       }
 
-      setAdSlot(INTERSTITIAL_ID, slot)
+      onAdSlotUpdate({ type: 'add', id: INTERSTITIAL_ID, slot })
     })
 
     function destroySlot() {
       console.debug(`InterstitialAdSlot: destroying slot`)
-      deleteAdSlot(INTERSTITIAL_ID)
       slot && googletag.destroySlots([slot])
     }
 
     return () => {
       console.debug('InterstitialAdSlot: unmount')
+      onAdSlotUpdate({ type: 'remove', id: INTERSTITIAL_ID })
       googletag.cmd.push(destroySlot)
     }
-  }, [isActive, navBar, path, unhideWindow])
+  }, [isActive, navBar, onAdSlotUpdate, path, unhideWindow])
 }
 
 function InterstitialAdSlot(props: InterstitialAdSlotProps) {
