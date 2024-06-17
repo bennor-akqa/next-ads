@@ -11,10 +11,10 @@ export default function About() {
       <AdContextProvider>
         <h1 className="text-center text-2xl font-semibold">About</h1>
         <div className="flex flex-row justify-center mt-4">
-          <AdSlot id="about-1" path="/6355419/Travel/Europe/France/Paris" size="banner" />
+          <AdSlot id="about-1" path="/6355419/Travel/Europe/France/Paris" size="300x250" />
         </div>
         <div className="flex flex-row justify-center mt-4">
-          <AdSlot id="about-2" path="/6355419/Travel/Europe/France/Paris" size="banner" />
+          <AdSlot id="about-2" path="/6355419/Travel/Europe/France/Paris" size="300x250" />
         </div>
         <p className="mt-8 text-center">Lorem ipsum dolor sit amet...</p>
         <RequestAds />

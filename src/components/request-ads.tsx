@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
-import { getAdSlotsInternal } from './ad-slot'
 import { useAdContext } from './ad-context-provider'
+import { getAdSlots } from './ad-slots-cache'
 
 export default function RequestAds() {
   const { disableAds, initialized } = useAdContext()
@@ -12,7 +12,7 @@ export default function RequestAds() {
       // In many real world scenarios, requesting ads for *all*
       // slots is not optimal. Instead, care should be taken to
       // only refresh newly added/updated slots.
-      const adSlots = getAdSlotsInternal()
+      const adSlots = getAdSlots()
       if (!adSlots.length) {
         console.debug('RequestAds: No ads to refresh')
         return
@@ -21,6 +21,10 @@ export default function RequestAds() {
         'RequestAds: Refreshing ads',
         adSlots.map((s) => s.getSlotElementId()),
       )
+      const interstitial = adSlots.find((s) => s.getSlotElementId() === 'interstitial')
+      if (interstitial) {
+        googletag.display(interstitial)
+      }
       googletag.pubads().refresh(adSlots)
     })
   }, [isActive])

@@ -11,6 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <Link href="/">Home</Link>
         <Link href="/about">About</Link>
         <Link href="/ad-free">Ad Free</Link>
+        <Link href="/all-sizes">All Sizes</Link>
       </nav>
 
       <Component {...pageProps} />

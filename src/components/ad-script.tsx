@@ -1,6 +1,5 @@
 import Script from 'next/script'
 import { ADS_ENABLED } from './constants'
-import Head from 'next/head'
 
 if (ADS_ENABLED && typeof window !== 'undefined') {
   // Ensure we can interact with the GPT command array.
@@ -20,9 +19,6 @@ if (ADS_ENABLED && typeof window !== 'undefined') {
 export default function AdScript() {
   return ADS_ENABLED ? (
     <>
-      <Head>
-        <link key="gpt-preload" rel="preload" href="https://securepubads.g.doubleclick.net/tag/js/gpt.js" as="script" />
-      </Head>
       <Script strategy="afterInteractive" src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" />
     </>
   ) : (

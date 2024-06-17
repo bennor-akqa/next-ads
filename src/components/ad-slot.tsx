@@ -1,33 +1,14 @@
-import { CSSProperties, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useAdContext } from './ad-context-provider'
 import { ADS_ENABLED } from './constants'
-
-const AD_SLOT_SIZES = {
-  fluid: 'fluid',
-  leaderboard: [728, 90],
-  banner: [300, 250],
-} as const satisfies Record<string, googletag.SingleSize>
-
-export type AdSlotSize = keyof typeof AD_SLOT_SIZES
-
-const AD_SLOT_STYLES = Object.fromEntries(
-  Object.entries(AD_SLOT_SIZES).map(([key, value]) => [
-    key,
-    value !== 'fluid' ? { width: `${value[0]}px`, height: `${value[1]}px` } : undefined,
-  ]),
-) as Record<AdSlotSize, CSSProperties | undefined>
+import { getAdSlotSize, AdSlotSize, getAdSlotStyle } from './ad-slot-sizes'
+import { deleteAdSlot, setAdSlot } from './ad-slots-cache'
 
 export interface AdSlotProps {
   id: string
   path: string
   size: AdSlotSize
-  targeting?: Record<string, string>
-}
-
-const adSlots = new Map<string, googletag.Slot>()
-
-export function getAdSlotsInternal() {
-  return Array.from(adSlots.values())
+  targeting?: Record<string, string | string[]>
 }
 
 interface UseAdSlotOptions extends AdSlotProps {
@@ -47,8 +28,15 @@ function useAdSlot({ id, path, size, targeting, isActive }: UseAdSlotOptions) {
     googletag.cmd.push(() => {
       // Define an ad slot for div with id
       console.debug('AdSlot: defining slot', id, path, size)
-      slot = googletag.defineSlot(path, AD_SLOT_SIZES[size], id)?.addService(googletag.pubads())
+
+      const { size: generalSize, sizeMapping } = getAdSlotSize(size)
+      console.log(path, generalSize, id)
+      slot = googletag.defineSlot(path, generalSize, id)?.addService(googletag.pubads())
       if (!slot) return
+
+      if (sizeMapping) {
+        slot.defineSizeMapping(sizeMapping)
+      }
 
       if (targetingRef.current) {
         for (const [key, value] of Object.entries(targetingRef.current)) {
@@ -59,12 +47,12 @@ function useAdSlot({ id, path, size, targeting, isActive }: UseAdSlotOptions) {
       console.debug(`AdSlot: displaying slot`, id)
       googletag.display(slot)
 
-      adSlots.set(id, slot)
+      setAdSlot(id, slot)
     })
 
     function destroySlot() {
       console.debug(`AdSlot: destroying slot`, id)
-      adSlots.delete(id)
+      deleteAdSlot(id)
       slot && googletag.destroySlots([slot])
     }
 
@@ -82,7 +70,21 @@ function AdSlot(props: AdSlotProps) {
   const renderContainer = !disableAds
   useAdSlot({ ...props, id, isActive })
 
-  return renderContainer ? <div id={id} style={AD_SLOT_STYLES[props.size]}></div> : <></>
+  return renderContainer ? (
+    <div id={id} className="relative" style={getAdSlotStyle(props.size)}>
+      <AdPlaceholder />
+    </div>
+  ) : (
+    <></>
+  )
 }
 
 export default ADS_ENABLED ? AdSlot : () => <></>
+
+function AdPlaceholder() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-gray-50 text-gray-400 select-none text-xs">
+      Ad
+    </div>
+  )
+}
